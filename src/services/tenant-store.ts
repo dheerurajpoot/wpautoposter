@@ -357,7 +357,7 @@ export class TenantStore {
         tier: 'free' | 'starter' | 'pro' | 'agency' = 'free'
     ): Promise<UserProfile> {
         const cleanEmail = email.toLowerCase().trim();
-        const quota = tier === 'agency' ? 300 : tier === 'pro' ? 100 : tier === 'starter' ? 30 : 5;
+        const quota = tier === 'agency' ? 300 : tier === 'pro' ? 100 : tier === 'starter' ? 30 : 3;
         const resetDate = new Date(Date.now() + 30 * 24 * 3600 * 1000).toISOString();
 
         if (this.isSupabase && this.supabase) {
@@ -610,40 +610,7 @@ export class TenantStore {
         return { ...settings, is_automation_enabled: Boolean(settings.is_automation_enabled) };
     }
 
-    async getAdminSettings(): Promise<UserSettings | null> {
-        try {
-            if (this.isSupabase && this.supabase) {
-                const { data: adminProfiles } = await this.supabase
-                    .from('profiles')
-                    .select('id')
-                    .eq('role', 'admin')
-                    .limit(1);
-
-                if (adminProfiles && adminProfiles.length > 0) {
-                    const { data: adminSettings } = await this.supabase
-                        .from('user_settings')
-                        .select('*')
-                        .eq('user_id', adminProfiles[0].id)
-                        .maybeSingle();
-                    if (adminSettings && (adminSettings.wp_base_url || adminSettings.wp_app_password_encrypted)) {
-                        return adminSettings as UserSettings;
-                    }
-                }
-                return null;
-            }
-
-            const adminRow = this.sqliteDb?.prepare("SELECT id FROM profiles WHERE role = 'admin' LIMIT 1").get() as any;
-            if (adminRow?.id) {
-                const s = this.sqliteDb?.prepare("SELECT * FROM user_settings WHERE user_id = ?").get(adminRow.id) as any;
-                if (s && (s.wp_base_url || s.wp_app_password_encrypted)) {
-                    return s as UserSettings;
-                }
-            }
-            return null;
-        } catch {
-            return null;
-        }
-    }
+    // ─────────────────────────────────────────────────────────────────
 
     async updateUserSettings(userId: string, data: Partial<UserSettings> & Record<string, any>): Promise<void> {
         // Build clean sanitized payload with only valid schema columns

@@ -116,7 +116,7 @@ export function BillingTab() {
     };
   }, [rawValidityDate]);
 
-  const quotaTotal = effectiveProfile?.monthly_quota ?? effectiveProfile?.quota ?? 30;
+  const quotaTotal = effectiveProfile?.monthly_quota ?? effectiveProfile?.quota ?? (currentTier === "free" ? 3 : 30);
   const quotaUsed = effectiveProfile?.used_this_month ?? effectiveProfile?.usedThisMonth ?? 0;
   const quotaRemaining = Math.max(0, quotaTotal - quotaUsed);
   const quotaPercent = Math.min(100, Math.round((quotaUsed / (quotaTotal || 1)) * 100));
@@ -239,11 +239,9 @@ export function BillingTab() {
               <h3 className="text-3xl font-extrabold tracking-tight capitalize text-white">
                 {currentTier === "free" ? "Free Starter Plan" : `${currentTier} Plan`}
               </h3>
-              {currentTier !== "free" && (
-                <span className="text-xs text-indigo-200 font-medium">
-                  • {quotaTotal} articles / month
-                </span>
-              )}
+              <span className="text-xs text-indigo-200 font-medium">
+                • {quotaTotal} articles / month
+              </span>
             </div>
 
             {/* Validity Date Highlight */}

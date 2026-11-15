@@ -81,7 +81,7 @@ const FAQ_ITEMS: FaqItem[] = [
   {
     category: "billing",
     q: "What payment methods are supported?",
-    a: "We support Credit/Debit Cards, UPI, Netbanking via PayU (INR), as well as manual USDT cryptocurrency payments (TRC20, BEP20, ERC20) for international subscribers. We also offer a 5-article free trial with no credit card required.",
+    a: "We support Credit/Debit Cards, UPI, Netbanking via PayU (INR), as well as manual USDT cryptocurrency payments (TRC20, BEP20, ERC20) for international subscribers. We also offer a 3-article free trial with no credit card required.",
   },
   {
     category: "billing",

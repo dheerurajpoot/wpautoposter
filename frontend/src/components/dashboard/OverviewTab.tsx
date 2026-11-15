@@ -145,7 +145,7 @@ export function OverviewTab() {
   };
 
   // Quota calculation
-  const monthlyQuota = stats?.monthlyQuota || 30;
+  const monthlyQuota = stats?.monthlyQuota ?? (stats?.tierName === "free" ? 3 : 30);
   const usedQuota = stats?.usedQuota || 0;
   const quotaPercent = Math.min(100, Math.round((usedQuota / Math.max(1, monthlyQuota)) * 100));
 
@@ -298,7 +298,7 @@ export function OverviewTab() {
           </div>
           <div className="text-2xl font-bold text-slate-900">
             {stats?.remainingQuota ?? 0}
-            <span className="text-xs font-normal text-slate-400 ml-1">/ {stats?.monthlyQuota ?? 30}</span>
+            <span className="text-xs font-normal text-slate-400 ml-1">/ {stats?.monthlyQuota ?? (stats?.tierName === "free" ? 3 : 30)}</span>
           </div>
           <div className="w-full bg-slate-100 rounded-full h-1.5 mt-2 overflow-hidden">
             <div

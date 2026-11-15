@@ -20,3 +20,10 @@ npm run dev # starts the server + built-in cron (CRON_ENABLED=true, CRON_SCHEDUL
 
 node -e "const D=require('better-sqlite3');const db=new D('data/pipeline.db');db.prepare(\"UPDATE publish_queue SET status='planned', fail_reasons=NULL WHERE status IN ('failed','hold')\").run();db.close();"
 npm run cli run
+
+
+cd ~/wpautoposter
+# 1. Pull your latest code
+git pull origin main
+# 2. Rebuild and restart only what changed (Zero data loss)
+sudo docker compose up -d --build

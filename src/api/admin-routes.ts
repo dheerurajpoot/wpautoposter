@@ -104,7 +104,7 @@ adminRouter.put('/users/:userId/plan', async (req: Request, res: Response) => {
                 ? 100
                 : tier === 'starter'
                 ? 30
-                : 5;
+                : 3;
 
         await tenantStore.updateProfileTier(userId, tier, effectiveQuota);
         res.json({ ok: true, user: await tenantStore.getProfile(userId) });
@@ -128,7 +128,7 @@ adminRouter.post('/users/tier', async (req: Request, res: Response) => {
                 ? 100
                 : tier === 'starter'
                 ? 30
-                : 5;
+                : 3;
 
         const effectiveQuota = baseQuota + (Number(bonusQuota) || 0);
 

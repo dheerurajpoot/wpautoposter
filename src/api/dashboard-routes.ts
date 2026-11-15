@@ -20,7 +20,7 @@ async function getUserCustomPromptsMap(userId: string): Promise<Record<string, {
     const userPrompts = await tenantStore.getUserPrompts(userId);
     const settings = await tenantStore.getUserSettings(userId);
     const config = loadConfig();
-    const branding = extractSiteBranding(settings.wp_base_url || config.wpBaseUrl);
+    const branding = extractSiteBranding(settings.wp_base_url || '');
 
     const promptMap: Record<string, { system?: string; user?: string }> = {};
     for (const p of userPrompts) {
@@ -119,13 +119,13 @@ dashboardRouter.get('/overview', async (req: Request, res: Response) => {
             nextRunTime = getNextRunTime(settings.cron_schedule || '0 9 * * *', settings.cron_timezone || 'Asia/Kolkata');
         }
 
-        const config = loadConfig();
-        const effectiveUrl = settings.wp_base_url || config.wpBaseUrl || '';
-        const effectiveUser = settings.wp_api_user || config.wpApiUser || '';
-        const effectivePass = settings.wp_app_password_encrypted || config.wpApplicationPassword || '';
+        // In multi-tenant SaaS, each user's WordPress connection is strictly their own
+        const effectiveUrl = settings.wp_base_url || '';
+        const effectiveUser = settings.wp_api_user || '';
+        const effectivePass = settings.wp_app_password_encrypted || '';
         const isWpConfigured = !!(effectiveUrl && effectiveUser && effectivePass);
 
-        const monthlyQuota = profile?.monthly_quota || 30;
+        const monthlyQuota = profile?.monthly_quota ?? (profile?.subscription_tier === 'free' ? 3 : 30);
         const usedThisMonth = profile?.used_this_month || 0;
         const remainingQuota = Math.max(0, monthlyQuota - usedThisMonth);
 
@@ -598,14 +598,14 @@ dashboardRouter.post('/keywords/:id/run', async (req: Request, res: Response) =>
         const settings = await tenantStore.getUserSettings(user.id);
         const config = loadConfig();
 
-        const effectiveWpBase = settings.wp_base_url || config.wpBaseUrl;
-        const effectiveWpUser = settings.wp_api_user || config.wpApiUser;
-        const effectiveWpPass = settings.wp_app_password_encrypted || config.wpApplicationPassword;
+        const effectiveWpBase = settings.wp_base_url;
+        const effectiveWpUser = settings.wp_api_user;
+        const effectiveWpPass = settings.wp_app_password_encrypted;
 
         if (!effectiveWpBase || !effectiveWpUser || !effectiveWpPass) {
             res.status(400).json({
                 ok: false,
-                error: 'WordPress settings are not configured. Please configure WordPress in Settings or .env.',
+                error: 'WordPress settings are not configured. Please enter your WordPress site URL, username, and Application Password in Settings.',
             });
             return;
         }
@@ -777,7 +777,7 @@ dashboardRouter.get('/prompts', async (req: Request, res: Response) => {
         const storedPrompts = await tenantStore.getUserPrompts(user.id);
         const settings = await tenantStore.getUserSettings(user.id);
         const config = loadConfig();
-        const branding = extractSiteBranding(settings.wp_base_url || config.wpBaseUrl);
+        const branding = extractSiteBranding(settings.wp_base_url || '');
         const registry = loadPromptRegistry();
 
         const prompts = STAGE_DEFS.map((s) => {
@@ -921,7 +921,7 @@ dashboardRouter.get('/settings', async (req: Request, res: Response) => {
         const user = (req as any).user;
         const settings = await tenantStore.getUserSettings(user.id);
         const config = loadConfig();
-        const adminSettings = await tenantStore.getAdminSettings();
+        const isAdmin = user.role === 'admin';
 
         const cronSchedule = settings.cron_schedule || '0 9 * * *';
         const cronTimezone = settings.cron_timezone || 'Asia/Kolkata';
@@ -950,19 +950,12 @@ dashboardRouter.get('/settings', async (req: Request, res: Response) => {
             }
         }
 
-        // Inherit from admin settings or .env config if user has not set a custom WordPress password
-        if (!effectiveWpPass) {
-            effectiveWpPass = adminSettings?.wp_app_password_encrypted || config.wpApplicationPassword || '';
-        }
-
-        const effectiveWpBase = settings.wp_base_url || adminSettings?.wp_base_url || config.wpBaseUrl || '';
-        const effectiveWpUser = settings.wp_api_user || adminSettings?.wp_api_user || config.wpApiUser || '';
-
-        // Fall back to system defaults if user settings are not yet set
+        // Tenant settings: always strictly isolated per user.
+        // When a user has not configured WordPress yet, fields are completely blank.
         const safeSettings = {
             ...settings,
-            wp_base_url: effectiveWpBase,
-            wp_api_user: effectiveWpUser,
+            wp_base_url: settings.wp_base_url || '',
+            wp_api_user: settings.wp_api_user || '',
             wp_app_password: effectiveWpPass,
             ai_provider: settings.ai_provider || config.aiProvider || 'gemini',
             publish_posture: settings.publish_posture || config.publishPosture || 'auto_publish',
@@ -1118,9 +1111,9 @@ dashboardRouter.post('/settings/test-wp', async (req: Request, res: Response) =>
         const config = loadConfig();
 
         const currentSettings = await tenantStore.getUserSettings(user.id);
-        const effectiveUrl = wp_base_url || currentSettings.wp_base_url || config.wpBaseUrl;
-        const effectiveUser = wp_api_user || currentSettings.wp_api_user || config.wpApiUser;
-        const effectivePass = wp_app_password || currentSettings.wp_app_password_encrypted || config.wpApplicationPassword;
+        const effectiveUrl = wp_base_url || currentSettings.wp_base_url;
+        const effectiveUser = wp_api_user || currentSettings.wp_api_user;
+        const effectivePass = wp_app_password || currentSettings.wp_app_password_encrypted;
 
         if (!effectiveUrl || !effectiveUser || !effectivePass) {
             res.status(400).json({
@@ -1376,14 +1369,14 @@ dashboardRouter.post(['/pipeline/run-now', '/run-now'], async (req: Request, res
         const settings = await tenantStore.getUserSettings(user.id);
         const config = loadConfig();
 
-        const effectiveWpBase = settings.wp_base_url || config.wpBaseUrl;
-        const effectiveWpUser = settings.wp_api_user || config.wpApiUser;
-        const effectivePass = settings.wp_app_password_encrypted || config.wpApplicationPassword;
+        const effectiveWpBase = settings.wp_base_url;
+        const effectiveWpUser = settings.wp_api_user;
+        const effectiveWpPass = settings.wp_app_password_encrypted;
 
-        if (!effectiveWpBase || !effectiveWpUser || !effectivePass) {
+        if (!effectiveWpBase || !effectiveWpUser || !effectiveWpPass) {
             res.status(400).json({
                 ok: false,
-                error: 'WordPress settings are not configured. Go to Settings and configure your site connection or .env.',
+                error: 'WordPress settings are not configured. Go to Settings and configure your site connection.',
             });
             return;
         }
@@ -1391,7 +1384,7 @@ dashboardRouter.post(['/pipeline/run-now', '/run-now'], async (req: Request, res
         const configOverride: Partial<PipelineConfig> = {
             wpBaseUrl: effectiveWpBase,
             wpApiUser: effectiveWpUser,
-            wpApplicationPassword: effectivePass,
+            wpApplicationPassword: effectiveWpPass,
             publishPosture: (settings.publish_posture as any) || config.publishPosture || 'auto_publish',
         };
 

@@ -210,9 +210,9 @@ export async function executeUserScheduledBatch(
 
         // WordPress configuration check
         const config = loadConfig();
-        const effectiveWpBase = settings.wp_base_url || config.wpBaseUrl;
-        const effectiveWpUser = settings.wp_api_user || config.wpApiUser;
-        const effectivePass = settings.wp_app_password_encrypted || config.wpApplicationPassword;
+        const effectiveWpBase = settings.wp_base_url;
+        const effectiveWpUser = settings.wp_api_user;
+        const effectivePass = settings.wp_app_password_encrypted;
 
         if (!effectiveWpBase || !effectiveWpUser || !effectivePass) {
             const msg = 'WordPress settings not configured. Please configure WordPress URL, user, and Application Password in Settings.';

@@ -5,21 +5,24 @@ services:
       dockerfile: Dockerfile
     container_name: wp-autopilot-backend
     restart: unless-stopped
-    ports:
-      - "3100:3100"
+    expose:
+      - "3100" # Exposed only inside Docker network, NOT published to host
     env_file:
       - .env
     volumes:
-      # Persist SQLite databases (pipeline.db, saas.db)
       - ./data:/app/data
-      # Allow prompt customization without rebuild
       - ./prompts:/app/prompts:ro
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:3100/health"]
+      test: [ "CMD", "wget", "-qO-", "http://localhost:3100/health" ]
       interval: 30s
       timeout: 5s
       retries: 3
-      start_period: 10s
+      start_period: 15s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   frontend:
     build:
@@ -27,13 +30,19 @@ services:
       dockerfile: Dockerfile
     container_name: wp-autopilot-frontend
     restart: unless-stopped
-    ports:
-      - "3000:3000"
+    expose:
+      - "3000" # Exposed only inside Docker network
     environment:
       - BACKEND_API_URL=http://backend:3100
       - NODE_ENV=production
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   nginx:
     image: nginx:alpine
@@ -49,3 +58,16 @@ services:
     depends_on:
       - backend
       - frontend
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  certbot:
+    image: certbot/certbot:latest
+    container_name: wp-autopilot-certbot
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"

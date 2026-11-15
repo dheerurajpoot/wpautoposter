@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WP Content Autopilot — API &amp; Service Gateway</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: #0f172a;
+            color: #f8fafc;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+        .card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 1rem;
+            max-width: 32rem;
+            width: 100%;
+            padding: 2rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+        .icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 3.5rem;
+            height: 3.5rem;
+            background: #4f46e5;
+            color: #ffffff;
+            border-radius: 0.75rem;
+            margin-bottom: 1.25rem;
+            font-size: 1.5rem;
+        }
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: #ffffff;
+        }
+        p {
+            font-size: 0.875rem;
+            color: #94a3b8;
+            margin-bottom: 1.5rem;
+            line-height: 1.5;
+        }
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.375rem 0.75rem;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 9999px;
+            color: #34d399;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+        .status-dot {
+            width: 0.5rem;
+            height: 0.5rem;
+            background: #10b981;
+            border-radius: 9999px;
+        }
+        .actions {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .btn-primary {
+            background: #4f46e5;
+            color: #ffffff;
+        }
+        .btn-primary:hover {
+            background: #4338ca;
+        }
+        .btn-secondary {
+            background: #334155;
+            color: #e2e8f0;
+            border: 1px solid #475569;
+        }
+        .btn-secondary:hover {
+            background: #475569;
+        }
+        .footer {
+            margin-top: 1.5rem;
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="icon">&#9889;</div>
+        <div class="status-badge">
+            <span class="status-dot"></span>
+            Backend API Engine Active (Port 3100)
+        </div>
+        <h1>WP Content Autopilot</h1>
+        <p>
+            The backend REST API and automated AI publishing pipeline are running.
+            The user dashboard is built with Next.js and shadcn/ui in the <code>frontend/</code> folder.
+        </p>
+
+        <div class="actions">
+            <a href="http://localhost:3000" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+                Open Next.js Dashboard (Port 3000) &rarr;
+            </a>
+            <a href="/health" class="btn btn-secondary">
+                Inspect API Health Endpoint (/health)
+            </a>
+        </div>
+
+        <div class="footer">
+            To run the frontend dev server: <code>npm run frontend:dev</code>
+        </div>
+    </div>
+</body>
+</html>

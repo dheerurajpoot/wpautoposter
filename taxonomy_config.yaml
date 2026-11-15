@@ -1,0 +1,92 @@
+
+# taxonomy_config.yaml — Full taxonomy configuration
+# Edit to match your site's niche, categories, and taxonomy structure.
+# Pipeline uses this to validate/sync WordPress categories and tags.
+
+version: "2.3"
+
+# ── Categories ──────────────────────────────────────────────────
+# Define the WordPress categories managed by this pipeline.
+# At least one category is required.
+# slug: URL-safe identifier (lowercase, hyphens)
+# name: Display name shown in WordPress
+categories:
+  - slug: insurance
+    name: Insurance
+  - slug: solar-energy
+    name: Solar Energy
+  - slug: food-delivery
+    name: Food Delivery
+
+# ── Cluster → Category Mapping ──────────────────────────────────
+# Maps keyword.csv cluster values to category slugs defined above.
+# If a cluster is not listed, it falls back to default_fallback_category.
+# Every mapped category slug must exist in the categories list.
+cluster_to_category:
+  insurance-basics: insurance
+  solar-energy: solar-energy
+  food-delivery: food-delivery
+
+# ── Default Fallback Category ───────────────────────────────────
+# Category slug used when a keyword's cluster has no mapping.
+# Must match one of the slugs defined in categories.
+default_fallback_category: insurance
+
+# ── Tag Whitelist ───────────────────────────────────────────────
+# Tags are organized into groups.
+# Only whitelisted tags are eligible for automatic creation.
+# Add only relevant, consistently used tags.
+# brand: brand or product names approved for tagging
+# category: content-format tags
+# topic: subject-specific tags
+tag_whitelist:
+  brand: []
+
+  category:
+    - guides
+    - reviews
+    - comparisons
+    - how-to
+
+  topic:
+    - beginner
+    - advanced
+    - term-insurance
+    - life-insurance
+    - insurance-guide
+
+# ── Tag Archive Policy ──────────────────────────────────────────
+# default: Policy applied to tag archives unless explicitly graduated.
+# noindex_follow: Ask search engines not to index the archive while
+# allowing links on that page to be followed.
+# graduated: Tags approved for a different archive-indexing policy.
+tag_archive_policy:
+  default: noindex_follow
+  graduated: []
+
+# ── Approved Additions ──────────────────────────────────────────
+# Explicitly approved tags that may be created even if not in the
+# whitelist. Keep empty unless you intentionally approve extra tags.
+approved_additions: []
+
+# ── Tag Limits ──────────────────────────────────────────────────
+# Maximum number of tags assigned to a single post.
+max_tags_per_post: 8
+
+# ── News Default Cluster ────────────────────────────────────────
+# Cluster name assigned to news articles inserted into the queue.
+# If this cluster is not mapped in cluster_to_category, the pipeline
+# uses default_fallback_category.
+news_default_cluster: news
+
+# ── Image Style Hint ────────────────────────────────────────────
+# Style descriptor used in hero image prompts.
+# Examples: "vibrant food photography", "modern tech illustration".
+image_style_hint: clean professional editorial photography and modern illustrative graphics
+
+# ── News Relevance Keywords ──────────────────────────────────────
+# Keywords used to filter RSS news articles.
+# If empty, all articles from configured feeds are accepted without
+# keyword-based relevance filtering.
+# Example: [gaming, technology, entertainment, insurance]
+news_relevance_keywords: []

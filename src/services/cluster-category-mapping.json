@@ -1,0 +1,44 @@
+{
+    "_description": "Cluster → Canonical Category mapping. Customize per your niche. See taxonomy_config.yaml for full taxonomy setup.",
+    "_fallback": "general",
+    "_fallback_note": "If a cluster value is not found in this mapping, it falls back to 'general'. A warning 'cluster_unmapped' is emitted.",
+    "_example_note": "Below is a GENERIC template. Replace with your niche's real categories. Run 'npm run dev -- seed' after editing.",
+    "mapping": {
+        "getting-started": "getting-started",
+        "how-to": "tutorials",
+        "product-reviews": "reviews",
+        "comparisons": "reviews",
+        "industry-news": "news",
+        "tips-and-tricks": "tutorials",
+        "tools-and-software": "tools",
+        "best-practices": "tutorials",
+        "buying-guides": "reviews",
+        "trends": "news"
+    },
+    "canonical_categories": [
+        {
+            "slug": "getting-started",
+            "name": "Getting Started"
+        },
+        {
+            "slug": "tutorials",
+            "name": "Tutorials"
+        },
+        {
+            "slug": "reviews",
+            "name": "Reviews"
+        },
+        {
+            "slug": "news",
+            "name": "News"
+        },
+        {
+            "slug": "tools",
+            "name": "Tools"
+        },
+        {
+            "slug": "general",
+            "name": "General"
+        }
+    ]
+}

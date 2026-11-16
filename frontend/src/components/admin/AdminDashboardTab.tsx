@@ -424,9 +424,13 @@ export function AdminDashboardTab() {
                       {run.keyword_text}
                     </TableCell>
                     <TableCell>
-                      {run.status === "success" ? (
+                      {run.status === "drafted" ? (
+                        <Badge variant="info" className="text-[10px] font-semibold bg-amber-50 text-amber-800 border-amber-200">
+                          WP Draft
+                        </Badge>
+                      ) : run.status === "published" || run.status === "success" ? (
                         <Badge variant="success" className="text-[10px] font-semibold">
-                          Success
+                          Published
                         </Badge>
                       ) : run.status === "cost_blocked" ? (
                         <Badge variant="warning" className="text-[10px] font-semibold">

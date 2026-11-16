@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/auth-context";
 import { AuthScreen } from "@/components/auth/AuthScreen";
 import { Sidebar } from "@/components/layout/Sidebar";
+import { QuotaAlertBanner } from "@/components/dashboard/QuotaAlertBanner";
 import { Sparkles, Zap, Menu, X } from "lucide-react";
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
@@ -90,6 +91,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
       {/* Main Content Area - ONLY this scrolls, sidebar remains fixed */}
       <main className="flex-1 h-full min-w-0 overflow-y-auto p-4 sm:p-6 md:p-8">
+        <QuotaAlertBanner />
         {children}
       </main>
     </div>

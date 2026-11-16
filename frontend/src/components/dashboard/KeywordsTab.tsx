@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useMemo } from "react";
+import { useAuth } from "@/context/auth-context";
 import { apiFetch, KeywordRecord, getAuthToken } from "@/lib/api";
 import { useToast } from "@/components/ui/toast";
 import { Button } from "@/components/ui/button";
@@ -156,6 +157,7 @@ function renderDateTime(kw: KeywordRecord) {
 
 export function KeywordsTab() {
   const { showToast } = useToast();
+  const { refreshUser } = useAuth();
   const [keywords, setKeywords] = useState<KeywordRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [runningId, setRunningId] = useState<string | null>(null);
@@ -421,6 +423,7 @@ export function KeywordsTab() {
       if (res.ok) {
         showToast(`Article published to WordPress!`, "success");
         await loadKeywords();
+        refreshUser().catch(() => {});
         return;
       } else {
         showToast(res.message || "Pipeline execution completed with warnings", "error");
@@ -439,6 +442,7 @@ export function KeywordsTab() {
           if (updated && updated.status !== "in_progress" && updated.status !== "planned") {
             if (updated.status === "published") {
               showToast(`Article published successfully!`, "success");
+              refreshUser().catch(() => {});
             } else if (updated.status === "failed") {
               showToast(updated.last_error || "Publishing failed", "error");
             }
@@ -450,6 +454,7 @@ export function KeywordsTab() {
       }
       if (!completed) {
         await loadKeywords();
+        refreshUser().catch(() => {});
       }
     } finally {
       setRunningId(null);

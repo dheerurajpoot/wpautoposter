@@ -14,7 +14,7 @@ import { loadConfig, type PipelineConfig } from '../config';
 import { runKeywordJob } from '../runner';
 import { loadPromptRegistry, type PromptStageKey } from '../config/prompt-loader';
 import { getNextRunTime, executeUserScheduledBatch, buildDistributedSchedule } from '../services/saas-scheduler';
-import { extractSiteBranding, interpolatePromptWithSite } from '../services/site-branding';
+import { extractSiteBranding, interpolatePromptWithSite, normalizeSiteUrl } from '../services/site-branding';
 
 async function getUserCustomPromptsMap(userId: string): Promise<Record<string, { system?: string; user?: string }>> {
     const userPrompts = await tenantStore.getUserPrompts(userId);
@@ -104,7 +104,7 @@ dashboardRouter.get('/overview', async (req: Request, res: Response) => {
 
         // Fetch user pipeline runs
         const recentRuns = await tenantStore.getUserPipelineRuns(user.id, 8);
-        const successfulRuns = recentRuns.filter(r => r.status === 'success');
+        const successfulRuns = recentRuns.filter(r => r.status === 'success' || r.status === 'published' || r.status === 'drafted');
         const successRate = recentRuns.length > 0 
             ? Math.round((successfulRuns.length / recentRuns.length) * 100) 
             : (publishedCount + failedCount > 0 ? Math.round((publishedCount / (publishedCount + failedCount)) * 100) : 100);
@@ -598,7 +598,7 @@ dashboardRouter.post('/keywords/:id/run', async (req: Request, res: Response) =>
         const settings = await tenantStore.getUserSettings(user.id);
         const config = loadConfig();
 
-        const effectiveWpBase = settings.wp_base_url;
+        const effectiveWpBase = normalizeSiteUrl(settings.wp_base_url);
         const effectiveWpUser = settings.wp_api_user;
         const effectiveWpPass = settings.wp_app_password_encrypted;
 
@@ -980,6 +980,10 @@ dashboardRouter.put('/settings', async (req: Request, res: Response) => {
         const user = (req as any).user;
         const updateData: any = { ...req.body };
 
+        if (typeof updateData.wp_base_url === 'string') {
+            updateData.wp_base_url = normalizeSiteUrl(updateData.wp_base_url);
+        }
+
         // Only update password/key if non-empty string provided and not browser autofill of account password
         if (!updateData.wp_app_password_encrypted && !updateData.wp_app_password) {
             delete updateData.wp_app_password_encrypted;
@@ -1035,6 +1039,10 @@ dashboardRouter.post('/settings', async (req: Request, res: Response) => {
     try {
         const user = (req as any).user;
         const updateData: any = { ...req.body };
+
+        if (typeof updateData.wp_base_url === 'string') {
+            updateData.wp_base_url = normalizeSiteUrl(updateData.wp_base_url);
+        }
 
         if (!updateData.wp_app_password_encrypted && !updateData.wp_app_password) {
             delete updateData.wp_app_password_encrypted;
@@ -1111,7 +1119,7 @@ dashboardRouter.post('/settings/test-wp', async (req: Request, res: Response) =>
         const config = loadConfig();
 
         const currentSettings = await tenantStore.getUserSettings(user.id);
-        const effectiveUrl = wp_base_url || currentSettings.wp_base_url;
+        const effectiveUrl = normalizeSiteUrl(wp_base_url || currentSettings.wp_base_url);
         const effectiveUser = wp_api_user || currentSettings.wp_api_user;
         const effectivePass = wp_app_password || currentSettings.wp_app_password_encrypted;
 
@@ -1369,7 +1377,7 @@ dashboardRouter.post(['/pipeline/run-now', '/run-now'], async (req: Request, res
         const settings = await tenantStore.getUserSettings(user.id);
         const config = loadConfig();
 
-        const effectiveWpBase = settings.wp_base_url;
+        const effectiveWpBase = normalizeSiteUrl(settings.wp_base_url);
         const effectiveWpUser = settings.wp_api_user;
         const effectiveWpPass = settings.wp_app_password_encrypted;
 

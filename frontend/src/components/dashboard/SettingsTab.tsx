@@ -93,6 +93,16 @@ function formatHour12(hhmm: string): string {
   }
 }
 
+function cleanSiteUrl(url: string): string {
+  if (!url || !url.trim()) return "";
+  let clean = url.trim();
+  clean = clean.replace(/^(https?):\/+/i, "$1://");
+  if (!/^https?:\/\//i.test(clean)) {
+    clean = "https://" + clean.replace(/^\/+/, "");
+  }
+  return clean.replace(/\/+$/, "");
+}
+
 function cronToTimeString(cron: string): string {
   try {
     const parts = (cron || "0 9 * * *").trim().split(/\s+/);
@@ -198,11 +208,15 @@ export function SettingsTab() {
   const handleTestWordPress = async () => {
     setTesting(true);
     setTestResult(null);
+    const cleanedUrl = cleanSiteUrl(wpBaseUrl);
+    if (cleanedUrl && cleanedUrl !== wpBaseUrl) {
+      setWpBaseUrl(cleanedUrl);
+    }
     try {
       const res = await apiFetch<{ ok: boolean; message?: string; error?: string }>("/api/dashboard/settings/test-wp", {
         method: "POST",
         body: {
-          wp_base_url: wpBaseUrl,
+          wp_base_url: cleanedUrl || wpBaseUrl,
           wp_api_user: wpApiUser,
           wp_app_password: wpAppPassword,
         } as any,
@@ -226,11 +240,15 @@ export function SettingsTab() {
   const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
+    const cleanedUrl = cleanSiteUrl(wpBaseUrl);
+    if (cleanedUrl && cleanedUrl !== wpBaseUrl) {
+      setWpBaseUrl(cleanedUrl);
+    }
     try {
       await apiFetch("/api/dashboard/settings", {
         method: "POST",
         body: {
-          wp_base_url: wpBaseUrl.trim(),
+          wp_base_url: cleanedUrl || wpBaseUrl.trim(),
           wp_api_user: wpApiUser.trim(),
           wp_app_password: wpAppPassword || undefined,
           ai_provider: aiProvider,
@@ -386,6 +404,11 @@ export function SettingsTab() {
                 name="wp_remote_site_base_url"
                 value={wpBaseUrl}
                 onChange={(e) => setWpBaseUrl(e.target.value)}
+                onBlur={() => {
+                  if (wpBaseUrl.trim()) {
+                    setWpBaseUrl(cleanSiteUrl(wpBaseUrl));
+                  }
+                }}
                 placeholder="https://yourblog.com"
                 required
                 autoComplete="off"

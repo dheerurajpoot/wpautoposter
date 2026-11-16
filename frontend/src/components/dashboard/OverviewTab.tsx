@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import { useAuth } from "@/context/auth-context";
 import { apiFetch, PipelineRunRecord } from "@/lib/api";
 import { useToast } from "@/components/ui/toast";
 import { Button } from "@/components/ui/button";
@@ -73,6 +74,7 @@ interface OverviewStats {
 
 export function OverviewTab() {
   const { showToast } = useToast();
+  const { refreshUser } = useAuth();
   const [stats, setStats] = useState<OverviewStats | null>(null);
   const [runs, setRuns] = useState<PipelineRunRecord[]>([]);
   const [loading, setLoading] = useState(true);
@@ -106,6 +108,7 @@ export function OverviewTab() {
       if (res.ok) {
         showToast("Article published successfully to WordPress!", "success");
         await loadData();
+        refreshUser().catch(() => {});
         return;
       } else {
         showToast(res.message || "Pipeline execution completed with warning", "error");
@@ -124,6 +127,7 @@ export function OverviewTab() {
             if (latestRun.status === "success") {
               showToast("Article published successfully to WordPress!", "success");
               await loadData();
+              refreshUser().catch(() => {});
               completed = true;
               break;
             } else if (latestRun.status === "failed") {
@@ -138,6 +142,7 @@ export function OverviewTab() {
       if (!completed) {
         showToast(err.message || "Pipeline failed to execute", "error");
         await loadData();
+        refreshUser().catch(() => {});
       }
     } finally {
       setRunning(false);
@@ -615,16 +620,20 @@ export function OverviewTab() {
                 <TableRow key={run.id} className="hover:bg-slate-50/80 transition">
                   <TableCell className="font-medium text-slate-900">{run.keyword_text}</TableCell>
                   <TableCell>
-                    {run.status === "success" ? (
-                      <Badge variant="success" className="font-semibold">
+                    {run.status === "drafted" ? (
+                      <Badge variant="info" className="font-semibold text-xs bg-amber-50 text-amber-800 border-amber-200">
+                        WP Draft
+                      </Badge>
+                    ) : run.status === "published" || run.status === "success" ? (
+                      <Badge variant="success" className="font-semibold text-xs">
                         Published
                       </Badge>
                     ) : run.status === "cost_blocked" ? (
-                      <Badge variant="warning" className="font-semibold">
+                      <Badge variant="warning" className="font-semibold text-xs">
                         Quota Exceeded
                       </Badge>
                     ) : (
-                      <Badge variant="destructive" className="font-semibold" title={run.fail_reasons || ""}>
+                      <Badge variant="destructive" className="font-semibold text-xs" title={run.fail_reasons || ""}>
                         Failed
                       </Badge>
                     )}
@@ -637,7 +646,7 @@ export function OverviewTab() {
                         rel="noreferrer"
                         className="inline-flex items-center space-x-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-800 hover:underline"
                       >
-                        <span>View Live Article</span>
+                        <span>{run.status === "drafted" ? "View Draft in WP" : "View Live Article"}</span>
                         <ExternalLink className="w-3 h-3" />
                       </a>
                     ) : (

@@ -300,7 +300,7 @@ export function BillingTab() {
       </div>
 
       {/* Plan Cards Grid */}
-      <div>
+      <div id="pricing-tiers" className="scroll-mt-6">
         <div className="mb-4">
           <h3 className="text-lg font-bold text-slate-900">Select or Upgrade Your Plan</h3>
           <p className="text-xs text-slate-500">

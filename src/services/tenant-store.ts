@@ -111,7 +111,7 @@ export interface PipelineRunRecord {
     user_id: string;
     keyword_id: string | null;
     keyword_text: string;
-    status: 'success' | 'failed' | 'cost_blocked';
+    status: 'success' | 'published' | 'drafted' | 'failed' | 'cost_blocked';
     wp_post_id: number | null;
     wp_post_url: string | null;
     duration_seconds: number;
@@ -1469,34 +1469,146 @@ export class TenantStore {
     }
 
     async getUserPipelineRuns(userId: string, limit: number = 20): Promise<PipelineRunRecord[]> {
+        const settings = await this.getUserSettings(userId).catch(() => null);
+        const isAlwaysDraft = settings?.publish_posture === 'always_draft';
+
         if (this.isSupabase && this.supabase) {
             const { data } = await this.supabase
                 .from('pipeline_runs')
-                .select('*')
+                .select('*, keywords:keyword_id ( status )')
                 .eq('user_id', userId)
                 .order('created_at', { ascending: false })
                 .limit(limit);
-            return (data || []) as PipelineRunRecord[];
+
+            return ((data || []) as any[]).map((r) => {
+                let status = r.status;
+                const kwStatus = r.keywords?.status;
+                if (status === 'success') {
+                    if (kwStatus === 'drafted' || kwStatus === 'published') {
+                        status = kwStatus;
+                    } else if (isAlwaysDraft) {
+                        status = 'drafted';
+                    } else {
+                        status = 'published';
+                    }
+                }
+                return {
+                    id: r.id,
+                    user_id: r.user_id,
+                    keyword_id: r.keyword_id,
+                    keyword_text: r.keyword_text,
+                    status,
+                    wp_post_id: r.wp_post_id,
+                    wp_post_url: r.wp_post_url,
+                    duration_seconds: r.duration_seconds,
+                    fail_reasons: r.fail_reasons,
+                    created_at: r.created_at,
+                };
+            }) as PipelineRunRecord[];
         }
 
-        return this.sqliteDb!
-            .prepare('SELECT * FROM pipeline_runs WHERE user_id = ? ORDER BY created_at DESC LIMIT ?')
-            .all(userId, limit) as PipelineRunRecord[];
+        const rows = this.sqliteDb!
+            .prepare(`
+                SELECT r.*, k.status as kw_status 
+                FROM pipeline_runs r 
+                LEFT JOIN keywords k ON r.keyword_id = k.id 
+                WHERE r.user_id = ? 
+                ORDER BY r.created_at DESC 
+                LIMIT ?
+            `)
+            .all(userId, limit) as any[];
+
+        return rows.map((r) => {
+            let status = r.status;
+            if (status === 'success') {
+                if (r.kw_status === 'drafted' || r.kw_status === 'published') {
+                    status = r.kw_status;
+                } else if (isAlwaysDraft) {
+                    status = 'drafted';
+                } else {
+                    status = 'published';
+                }
+            }
+            return {
+                id: r.id,
+                user_id: r.user_id,
+                keyword_id: r.keyword_id,
+                keyword_text: r.keyword_text,
+                status,
+                wp_post_id: r.wp_post_id,
+                wp_post_url: r.wp_post_url,
+                duration_seconds: r.duration_seconds,
+                fail_reasons: r.fail_reasons,
+                created_at: r.created_at,
+            };
+        }) as PipelineRunRecord[];
     }
 
     async getGlobalPipelineRuns(limit: number = 30): Promise<PipelineRunRecord[]> {
         if (this.isSupabase && this.supabase) {
             const { data } = await this.supabase
                 .from('pipeline_runs')
-                .select('*')
+                .select('*, keywords:keyword_id ( status )')
                 .order('created_at', { ascending: false })
                 .limit(limit);
-            return (data || []) as PipelineRunRecord[];
+
+            return ((data || []) as any[]).map((r) => {
+                let status = r.status;
+                const kwStatus = r.keywords?.status;
+                if (status === 'success') {
+                    if (kwStatus === 'drafted' || kwStatus === 'published') {
+                        status = kwStatus;
+                    } else {
+                        status = 'published';
+                    }
+                }
+                return {
+                    id: r.id,
+                    user_id: r.user_id,
+                    keyword_id: r.keyword_id,
+                    keyword_text: r.keyword_text,
+                    status,
+                    wp_post_id: r.wp_post_id,
+                    wp_post_url: r.wp_post_url,
+                    duration_seconds: r.duration_seconds,
+                    fail_reasons: r.fail_reasons,
+                    created_at: r.created_at,
+                };
+            }) as PipelineRunRecord[];
         }
 
-        return this.sqliteDb!
-            .prepare('SELECT * FROM pipeline_runs ORDER BY created_at DESC LIMIT ?')
-            .all(limit) as PipelineRunRecord[];
+        const rows = this.sqliteDb!
+            .prepare(`
+                SELECT r.*, k.status as kw_status 
+                FROM pipeline_runs r 
+                LEFT JOIN keywords k ON r.keyword_id = k.id 
+                ORDER BY r.created_at DESC 
+                LIMIT ?
+            `)
+            .all(limit) as any[];
+
+        return rows.map((r) => {
+            let status = r.status;
+            if (status === 'success') {
+                if (r.kw_status === 'drafted' || r.kw_status === 'published') {
+                    status = r.kw_status;
+                } else {
+                    status = 'published';
+                }
+            }
+            return {
+                id: r.id,
+                user_id: r.user_id,
+                keyword_id: r.keyword_id,
+                keyword_text: r.keyword_text,
+                status,
+                wp_post_id: r.wp_post_id,
+                wp_post_url: r.wp_post_url,
+                duration_seconds: r.duration_seconds,
+                fail_reasons: r.fail_reasons,
+                created_at: r.created_at,
+            };
+        }) as PipelineRunRecord[];
     }
 
     // ── ADMIN METRICS ───────────────────────────────────────────────

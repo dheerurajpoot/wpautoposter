@@ -107,7 +107,7 @@ export interface PipelineRunRecord {
   user_id: string;
   keyword_id: string | null;
   keyword_text: string;
-  status: 'success' | 'failed' | 'cost_blocked';
+  status: 'success' | 'published' | 'drafted' | 'failed' | 'cost_blocked';
   wp_post_id: number | null;
   wp_post_url: string | null;
   duration_seconds: number;

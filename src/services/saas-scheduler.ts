@@ -20,6 +20,7 @@ import { resolveCronTimezone } from '../scheduler';
 import { logger } from '../logger';
 import { WpClient, formatWpErrorMessage } from './wp-client';
 import { normalizeBlogpostSubtype } from '../types';
+import { normalizeSiteUrl } from './site-branding';
 
 let schedulerInterval: ReturnType<typeof setInterval> | null = null;
 let isTickInProgress = false;
@@ -210,7 +211,7 @@ export async function executeUserScheduledBatch(
 
         // WordPress configuration check
         const config = loadConfig();
-        const effectiveWpBase = settings.wp_base_url;
+        const effectiveWpBase = normalizeSiteUrl(settings.wp_base_url);
         const effectiveWpUser = settings.wp_api_user;
         const effectivePass = settings.wp_app_password_encrypted;
 

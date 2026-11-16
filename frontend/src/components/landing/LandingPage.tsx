@@ -1131,7 +1131,7 @@ export function LandingPage() {
                   <p className="text-xs text-slate-500">For bloggers &amp; niche sites</p>
                 </div>
                 <div className="text-3xl font-black text-slate-900">
-                  ₹9 <span className="text-xs font-normal text-slate-500">/mo (or $10 USDT)</span>
+                  ₹999 <span className="text-xs font-normal text-slate-500">/mo (or $10 USDT)</span>
                 </div>
                 <ul className="space-y-2 text-xs text-slate-600 font-medium">
                   <li className="flex items-center gap-2">

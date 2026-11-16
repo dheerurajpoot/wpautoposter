@@ -165,8 +165,18 @@ export function BillingTab() {
   };
 
   const getDepositAddress = () => {
-    if (!cryptoInfo?.depositAddresses) return "Loading deposit address...";
-    return cryptoInfo.depositAddresses[cryptoNetwork] || cryptoInfo.depositAddresses.TRC20 || "";
+    if (!cryptoInfo) return "Loading deposit address...";
+    if (cryptoInfo.depositAddresses) {
+      const addr = cryptoInfo.depositAddresses[cryptoNetwork] || cryptoInfo.depositAddresses.TRC20;
+      if (addr) return addr;
+    }
+    if (cryptoNetwork === "TRC20" && cryptoInfo.trc20Address) return cryptoInfo.trc20Address;
+    if (cryptoNetwork === "BEP20" && cryptoInfo.bep20Address) return cryptoInfo.bep20Address;
+    if (Array.isArray(cryptoInfo.networks)) {
+      const net = cryptoInfo.networks.find((n: any) => n.id === cryptoNetwork);
+      if (net?.address) return net.address;
+    }
+    return cryptoInfo.trc20Address || cryptoInfo.bep20Address || "";
   };
 
   const copyAddressToClipboard = () => {

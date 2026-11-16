@@ -226,6 +226,29 @@ adminRouter.post('/crypto-approvals/:paymentId/reject', async (req: Request, res
     }
 });
 
+// View and update deposit wallet addresses for USDT subscriptions
+adminRouter.get('/crypto/wallets', (_req: Request, res: Response) => {
+    res.json(cryptoService.getDepositInfo());
+});
+
+adminRouter.post('/crypto/wallets', (req: Request, res: Response) => {
+    try {
+        const { trc20Address, bep20Address } = req.body;
+        if (!trc20Address && !bep20Address) {
+            res.status(400).json({ error: 'At least one wallet address (TRC20 or BEP20) is required' });
+            return;
+        }
+        cryptoService.updateDepositAddresses(trc20Address, bep20Address);
+        res.json({
+            ok: true,
+            message: 'Official deposit wallet addresses updated successfully!',
+            config: cryptoService.getDepositInfo(),
+        });
+    } catch (err: any) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // ── GLOBAL PROMPT TEMPLATES ──────────────────────────────────────────
 
 adminRouter.get('/templates', async (_req: Request, res: Response) => {

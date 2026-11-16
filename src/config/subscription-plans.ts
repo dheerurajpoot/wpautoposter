@@ -3,7 +3,7 @@ export const PLANS = [
   {
     id: 'starter',
     name: 'Starter Plan',
-    priceINR: 9,
+    priceINR: 999,
     priceUSDT: 10,
     monthlyQuota: 30,
     features: [

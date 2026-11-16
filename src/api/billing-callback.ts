@@ -70,7 +70,7 @@ function sendRedirectResponse(res: Response, targetUrl: string) {
 
 // PayU return callback (POST from PayU gateway)
 billingCallbackRouter.post('/payu/callback', async (req: Request, res: Response) => {
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const frontendUrl = 'https://wpautoposter.com';
     try {
         const body = req.body || {};
         logger.info('PayU callback received', { txnid: body.txnid, status: body.status, amount: body.amount });
